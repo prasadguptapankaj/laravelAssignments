@@ -39,7 +39,9 @@ class OrderSeeder extends Seeder
                         $orderItems[] = OrderItem::factory()->make();
                     }
 
+                    
                     $order->orderItems()->saveMany($orderItems);
+                    $order->payment()->save(Payment::factory()->make());
                 }
             }
 
