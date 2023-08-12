@@ -17,35 +17,15 @@ class CustomerSeeder extends Seeder
      */
     public function run(): void
     {
-        // Disable foreign key constraints
-        Schema::disableForeignKeyConstraints();
 
-        // Start a database transaction
-        DB::beginTransaction();
-
-        try {
-            // Use batch processing
-            $batchSize = 100; // Adjust this based on your needs
-            $totalRecords = 1000;
-
-            for ($i = 0; $i < $totalRecords; $i += $batchSize) {
-                Customer::factory($batchSize)
+        foreach (array_chunk(range(1, 1000), 100) as $chunkIndex => $chunk) {
+            DB::transaction(function () use ($chunk) {
+                Customer::factory()
+                    ->count(count($chunk))
                     ->has(BillingAddress::factory()->count(2))
-                    ->has(ShippingAddress::factory()->count(rand(1, 2)))
+                    ->has(ShippingAddress::factory()->count(1))
                     ->create();
-                    
-            }
-
-            // Commit the transaction
-            DB::commit();
-        } catch (\Exception $e) {
-            // Rollback the transaction on error
-            DB::rollback();
-            throw $e;
-        } finally {
-            // Re-enable foreign key constraints
-            Schema::enableForeignKeyConstraints();
+            });
         }
-
     }
 }

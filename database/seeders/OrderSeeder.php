@@ -19,40 +19,21 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-        // Disable foreign key constraints
         Schema::disableForeignKeyConstraints();
 
-        // Start a database transaction
-        DB::beginTransaction();
-
         try {
-            $totalOrders = 50000;
-            $ordersPerBatch = 100; // Adjust this based on your needs
-            $itemsPerOrder = 5;
-
-            for ($i = 0; $i < $totalOrders; $i += $ordersPerBatch) {
-                $orders = Order::factory($ordersPerBatch)->create();
-
-                foreach ($orders as $order) {
-                    $orderItems = [];
-                    for ($j = 0; $j < $itemsPerOrder; $j++) {
-                        $orderItems[] = OrderItem::factory()->make();
-                    }
-
-                    
-                    $order->orderItems()->saveMany($orderItems);
-                    $order->payment()->save(Payment::factory()->make());
-                }
-            }
-
-            // Commit the transaction
-            DB::commit();
+            foreach (array_chunk(range(1, 50000), 1000) as $chunkIndex => $chunk) {
+                DB::transaction(function () use ($chunk) {
+                    Order::factory()
+                        ->count(count($chunk))
+                        ->has(OrderItem::factory()->count(5))
+                        ->has(Payment::factory())
+                        ->create();
+                });
+            };
         } catch (\Exception $e) {
-            // Rollback the transaction on error
-            DB::rollback();
             throw $e;
         } finally {
-            // Re-enable foreign key constraints
             Schema::enableForeignKeyConstraints();
         }
     }
