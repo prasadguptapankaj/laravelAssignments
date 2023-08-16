@@ -23,15 +23,12 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         $customer = Customer::inRandomOrder()->first();
-        $billingAddress = $customer->billingAddresses->random();
-        $shippingAddress = $customer->shippingAddresses->random();
-        $status = $this->faker->randomElement(['new', 'processed', 'unprocessed']);
-        
+       
         return [
             'customer_id' => $customer->id,
-            'billing_address_id' => $billingAddress->id,
-            'shipping_address_id' => $shippingAddress->id,
-            'status' => $status,
+            'billing_address_id' => BillingAddress::inRandomOrder()->where('customer_id', $customer->id)->pluck('id')->first(),
+            'shipping_address_id' => ShippingAddress::inRandomOrder()->where('customer_id', $customer->id)->pluck('id')->first(),
+            'status' => $this->faker->randomElement(['new', 'processed', 'unprocessed']),
             'total_amount' => $this->faker->randomFloat(2, 50, 1000),
             'created_at' => $this->faker->dateTimeBetween('2018-01-01', '2023-12-31'),
             'updated_at' => now(),

@@ -9,11 +9,19 @@ use App\Models\BillingAddress;
 use App\Models\Payment;
 use App\Models\OrderItem;
 use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'customer_id',
+        'billing_address_id',
+        'shipping_address_id',
+        'status',
+        'total_amount',
+    ];
 
     public function shippingAddress()
     {
@@ -39,4 +47,5 @@ class Order extends Model
     {
         return $this->belongsTo(Customer::class);
     }
+
 }

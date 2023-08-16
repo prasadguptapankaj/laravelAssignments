@@ -64,21 +64,10 @@ class DashboardController extends Controller
             ->get();
     }
 
-
-    public function newOrders(Request $request)
-    {
-        $newOrders = Order::with(['customer', 'billingAddress', 'shippingAddress'])
-            ->where('status', 'new') // Adjust the status condition based on your setup
-            ->orderBy('created_at', 'desc')
-            ->paginate(10); // You can adjust the pagination based on your preference
-
-        return view('dashboard.index', compact('newOrders'));
-    }
-
     public function unProcessedOrder(){
         return Order::where('status', 'new')
                        ->orWhere('status', 'unprocessed')
-                       ->with('customer') // Load customer details
+                       ->with('customer') 
                        ->paginate(10);
     }
 
@@ -87,7 +76,7 @@ class DashboardController extends Controller
         return Product::select('products.id', 'products.name', DB::raw('SUM(order_items.quantity) as total_quantity_sold'))
             ->join('order_items', 'products.id', '=', 'order_items.product_id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->where('orders.created_at', '>=', now()->subYears(2)) // Orders from the last 2 years
+            ->where('orders.created_at', '>=', now()->subYears(2)) 
             ->groupBy('products.id', 'products.name')
             ->orderByDesc('total_quantity_sold')
             ->limit(10)
